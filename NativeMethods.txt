@@ -1,0 +1,12 @@
+AdjustTokenPrivileges
+GetCurrentProcess
+GetTokenInformation
+HKEY_LOCAL_MACHINE
+LookupPrivilegeValue
+LookupPrivilegeName
+OpenProcessToken
+REG_OPEN_CREATE_OPTIONS
+RegOpenKeyEx
+RegQueryValueEx
+RegQueryInfoKey 
+WIN32_ERROR
