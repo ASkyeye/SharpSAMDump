@@ -124,7 +124,7 @@ namespace SharpSAMDump
             Tuple<byte[], byte[]> keys = GetUserDESKeys(rid);
 
             byte[] plaintext1 = UnprotectDES(keys.Item1, ciphertext, 0);
-            byte[] plaintext2 = UnprotectDES(keys.Item1, ciphertext, 8);
+            byte[] plaintext2 = UnprotectDES(keys.Item2, ciphertext, 8);
 
             return Util.ConcatArrays(plaintext1, plaintext2);
         }

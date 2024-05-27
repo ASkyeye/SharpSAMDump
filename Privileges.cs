@@ -13,40 +13,24 @@ namespace SharpSAMDump
     {
         public const string SeBackupPrivilege = "SeBackupPrivilege";
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct _LUID_AND_ATTRIBUTES
-        {
-            public LUID Luid;
-            public TOKEN_PRIVILEGES_ATTRIBUTES Attributes;
-        }
-
-        private struct _TOKEN_PRIVILEGES
-        {
-            public uint PrivilegeCount;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 40)]
-            public _LUID_AND_ATTRIBUTES[] Privileges;
-        }
-
         public static void EnablePrivilege(string name, bool enabled = true)
         {
             SafeFileHandle hToken = GetCurrentProcessToken(TOKEN_ACCESS_MASK.TOKEN_ADJUST_PRIVILEGES | TOKEN_ACCESS_MASK.TOKEN_QUERY);
             LUID luid = LookupPrivilegeLUID(name);
 
-            LUID_AND_ATTRIBUTES[] privileges = {
-                new LUID_AND_ATTRIBUTES()
-                {
-                    Luid = luid,
-                    Attributes = enabled ? TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED : 0,
-                }
+            LUID_AND_ATTRIBUTES privileges = new LUID_AND_ATTRIBUTES()
+            {
+                Luid = luid,
+                Attributes = enabled ? TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED : 0,
             };
 
             TOKEN_PRIVILEGES tokenPrivileges = new TOKEN_PRIVILEGES();
             tokenPrivileges.PrivilegeCount = 1;
-            tokenPrivileges.Privileges = new ReadOnlySpan<LUID_AND_ATTRIBUTES>(privileges);
+            tokenPrivileges.Privileges.e0 = privileges;
 
             unsafe
             {
-                if (!PInvoke.AdjustTokenPrivileges(hToken, false, tokenPrivileges, 0, null, null))
+                if (!PInvoke.AdjustTokenPrivileges(hToken, false, &tokenPrivileges, 0, null, null))
                 {
                     throw new Win32Exception();
                 }
@@ -79,11 +63,10 @@ namespace SharpSAMDump
                     throw new Win32Exception();
                 }
 
-                // we're using our custom _TOKEN_PRIVILEGES structure here because CsWin32's auto-generated implementation is horrible :(
-                _TOKEN_PRIVILEGES tokenPrivileges = (_TOKEN_PRIVILEGES)Marshal.PtrToStructure(tokenInformation, typeof(_TOKEN_PRIVILEGES));                   
+                TOKEN_PRIVILEGES tokenPrivileges = (TOKEN_PRIVILEGES)Marshal.PtrToStructure(tokenInformation, typeof(TOKEN_PRIVILEGES));                   
                 for (int index = 0; index < tokenPrivileges.PrivilegeCount; index++)
                 {
-                    _LUID_AND_ATTRIBUTES privilege = tokenPrivileges.Privileges[index];
+                    LUID_AND_ATTRIBUTES privilege = tokenPrivileges.Privileges[index];
                     if (privilege.Luid.Equals(luid) && (privilege.Attributes & TOKEN_PRIVILEGES_ATTRIBUTES.SE_PRIVILEGE_ENABLED) != 0)
                     {
                         retval = true;
