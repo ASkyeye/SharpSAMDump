@@ -5,11 +5,14 @@ namespace SharpSAMDump
 {
     internal static class Util
     {
-        public static int GetHexVal(char hex)
+        // from: https://stackoverflow.com/a/9995303
+        private static int GetHexVal(char hex)
         {
             int val = hex;
             return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
+
+        // from: https://stackoverflow.com/a/9995303
         public static byte[] FromHexString(string hex)
         {
             if (hex.Length % 2 == 1)
@@ -25,6 +28,7 @@ namespace SharpSAMDump
             return arr;
         }
 
+        // from: https://stackoverflow.com/a/623184
         public static string ToHexString(byte[] data, bool upperCase = false)
         {
             if (data == null)
@@ -37,6 +41,7 @@ namespace SharpSAMDump
             return upperCase ? hexString.ToUpper() : hexString.ToLower();
         }
 
+        // from: https://stackoverflow.com/a/26206519
         public static string HexDump(byte[] bytes, int bytesPerLine = 16)
         {
             if (bytes == null) return "<null>";
